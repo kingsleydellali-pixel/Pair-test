@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KING XD DECEMBER BOT — Pairing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: url('/gothic-bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #eee;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 0;
+    }
+    .card {
+      position: relative;
+      z-index: 1;
+      background: rgba(10, 0, 0, 0.85);
+      border: 2px solid #8b0000;
+      border-radius: 16px;
+      padding: 40px 30px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(139, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+    }
+    h1 {
+      font-size: 1.6rem;
+      color: #cc0000;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+    .sub {
+      font-size: 0.8rem;
+      color: #ff4444;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+    .blood {
+      color: #cc0000;
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #550000;
+      background: #1a0000;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    input::placeholder { color: #884444; }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #8b0000, #cc0000);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+    button:hover { background: linear-gradient(135deg, #cc0000, #ff0000); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    #result {
+      margin-top: 22px;
+      font-size: 1rem;
+      min-height: 40px;
+      word-break: break-all;
+    }
+    .code-box {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #ff4444;
+      letter-spacing: 4px;
+      margin-top: 8px;
+      padding: 10px;
+      background: #1a0000;
+      border-radius: 8px;
+      border: 1px solid #550000;
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: #aa6666;
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 0.7rem;
+      color: #661111;
+      letter-spacing: 1px;
+    }
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ff4444;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⛧ KING XD DECEMBER BOT ⛧</h1>
+    <div class="sub">by KINGSLEY-XMDTECH</div>
+    <div class="blood">🩸 Pair Your Device 🩸</div>
+    <p class="hint" style="margin-bottom:18px;">
+      Enter your WhatsApp number with country code (digits only).<br/>
+      Example: <strong>254712345678</strong>
+    </p>
+    <input id="number" type="tel" placeholder="254712345678" maxlength="15" />
+    <button id="pairBtn" onclick="requestPair()">⸸ REQUEST PAIRING CODE ⸸</button>
+    <div id="result"></div>
+    <div class="footer">⸸ DARKNESS AWAITS ⸸</div>
+  </div>
+
+  <script>
+    async function requestPair() {
+      const number = document.getElementById('number').value.trim();
+      const btn = document.getElementById('pairBtn');
+      const result = document.getElementById('result');
+
+      if (!/^\d{10,15}$/.test(number)) {
+        result.innerHTML = '⛧ Invalid number. Use digits only with country code.';
+        return;
+      }
+
+      btn.disabled = true;
+      result.innerHTML = '<span class="spinner"></span>Requesting code…';
+
+      try {
+        const res = await fetch('/pair', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ number })
+        });
+        const data = await res.json();
+
+        if (data.success && data.code) {
+          result.innerHTML = `
+            <div style="color:#ff4444;margin-bottom:6px;">🩸 Your pairing code:</div>
+            <div class="code-box">${data.code.match(/.{1,4}/g).join('-')}</div>
+            <div class="hint">
+              Open WhatsApp → Linked Devices → Link with phone number<br/>
+              and enter the code above.
+            </div>
+          `;
+        } else if (data.status === 'already_registered') {
+          result.innerHTML = '⛧ This session is already linked.';
+        } else {
+          result.innerHTML = `⛧ ${data.error || 'Pairing failed.'}`;
+        }
+      } catch (err) {
+        result.innerHTML = `⛧ Network error: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+  </html>
